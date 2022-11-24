@@ -12,7 +12,7 @@ def main():
 
     
     filename = stable_file.split('/')[-1].split('.')[0]
-
+    print(filename)
     previous_file = open(stable_file)
     current_file = open(dev_file)
 
