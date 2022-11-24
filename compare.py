@@ -1,10 +1,15 @@
 import csv 
+import sys
 import json
+
 
 def main():
 
-    previous_file = open('value1.json')
-    current_file = open('value2.json')
+    print(sys.argv)
+    stable_file = sys.argv[1]
+    dev_file = sys.argv[2]
+    previous_file = open(stable_file)
+    current_file = open(dev_file)
 
     previous_data = json.load(previous_file)
     current_data = json.load(current_file)
@@ -67,10 +72,13 @@ def process_processing_data(report, previous_data, current_data):
 
 def create_csv(data):
 
-    with open('Report.csv', "w") as value:
+    with open('./report.csv', "w") as value:
         report = csv.writer(value)
         for i in data:
             report.writerow(i)
+
+    print("Report written")
+
 
 if __name__ == "__main__":
     main()
