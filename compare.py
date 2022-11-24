@@ -69,10 +69,11 @@ def process_processing_data(report, previous_data, current_data):
 
 def create_csv(data):
 
-    with open('Report.csv', "w") as value:
+    with open('./report.csv', "w") as value:
         report = csv.writer(value)
         for i in data:
             report.writerow(i)
 
+    print("Report written")
 # if __name__ == "__main__":
 #     main()
