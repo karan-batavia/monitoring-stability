@@ -75,7 +75,7 @@ def process_processing_data(report, previous_data, current_data):
         count_b = current_value[i] if i in current_value else 0
         report.append([i, count_a, count_b])
 
-def create_csv(data):
+def create_csv(data, filename):
 
     with open(f'./{filename}.csv', "w") as value:
         report = csv.writer(value)
