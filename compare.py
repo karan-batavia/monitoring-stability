@@ -4,11 +4,12 @@ import json
 
 
 def main():
-    runner, stable_file, dev_file = sys.argv
-    print(stable_file)
-    print(dev_file)
-    previous_file = open('stable_file')
-    current_file = open('dev_file')
+
+    print(sys.argv)
+    stable_file = sys.argv[1]
+    dev_file = sys.argv[2]
+    previous_file = open(stable_file)
+    current_file = open(dev_file)
 
     previous_data = json.load(previous_file)
     current_data = json.load(current_file)
