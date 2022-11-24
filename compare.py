@@ -5,6 +5,8 @@ import json
 
 def main():
     runner, stable_file, dev_file = sys.argv
+    print(stable_file)
+    print(dev_file)
     previous_file = open('stable_file')
     current_file = open('dev_file')
 
