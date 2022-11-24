@@ -8,6 +8,11 @@ def main():
     print(sys.argv)
     stable_file = sys.argv[1]
     dev_file = sys.argv[2]
+
+
+    
+    filename = stable_file.split('/')[-1].split('.')[0]
+
     previous_file = open(stable_file)
     current_file = open(dev_file)
 
@@ -18,7 +23,7 @@ def main():
 
     process_sources_data(report, previous_data['sources'], current_data['sources'])
     process_processing_data(report, previous_data['processing'], current_data['processing'])
-    create_csv(report)
+    create_csv(report, filename)
 
     previous_file.close()
     current_file.close()
@@ -72,7 +77,7 @@ def process_processing_data(report, previous_data, current_data):
 
 def create_csv(data):
 
-    with open('./report.csv', "w") as value:
+    with open(f'./{filename}.csv', "w") as value:
         report = csv.writer(value)
         for i in data:
             report.writerow(i)
