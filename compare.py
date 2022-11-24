@@ -75,5 +75,7 @@ def create_csv(data):
             report.writerow(i)
 
     print("Report written")
-# if __name__ == "__main__":
-#     main()
+
+
+if __name__ == "__main__":
+    main()
