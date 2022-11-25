@@ -21,7 +21,9 @@ def main():
 
     process_sources_data(report, previous_data['sources'], current_data['sources'])
     process_processing_data(report, previous_data['processing'], current_data['processing'])
-    process_collection(report, previous_data['collections'][0]['collections'], current_data['collections'][0]['collections'])
+    
+    if (len(previous_data['collections'])):
+        process_collection(report, previous_data['collections'][0]['collections'], current_data['collections'][0]['collections'])
     process_violations(report, previous_data['violations'], current_data['violations'])
     create_csv(report, filename)
 
@@ -29,7 +31,6 @@ def main():
     current_file.close()
 
 def process_sources_data(report, previous_data, current_data):
-
     report.append([])
     report.append([])
 
@@ -84,6 +85,7 @@ def process_processing_data(report, previous_data, current_data):
         report.append([i, count_a, count_b])
 
 def process_collection(report, previous_data, current_data):
+
 
     report.append([])
     report.append([])

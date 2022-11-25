@@ -1,3 +1,5 @@
 Report.csv
 value1.json
 value2.json
+*.txt
+*.out
