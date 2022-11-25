@@ -19,13 +19,23 @@ def main():
 
     report = []
 
-    process_sources_data(report, previous_data['sources'], current_data['sources'])
-    process_processing_data(report, previous_data['processing'], current_data['processing'])
+
+    source_data_stable = previous_data['sources']
+    source_data_dev = current_data['sources']
     
-    if (len(previous_data['collections'])):
-        process_collection(report, previous_data['collections'][0]['collections'], current_data['collections'][0]['collections'])
-    process_violations(report, previous_data['violations'], current_data['violations'])
-    create_csv(report, filename)
+    for row in process_new_sources(source_data_stable, source_data_dev):
+        report.append(row)
+
+
+    # process_new_sources(previous_data['sources'], current_data['sources'])
+
+    # process_sources_data(report, previous_data['sources'], current_data['sources'])
+    # process_processing_data(report, previous_data['processing'], current_data['processing'])
+    
+    # if (len(previous_data['collections'])):
+    #     process_collection(report, previous_data['collections'][0]['collections'], current_data['collections'][0]['collections'])
+    # process_violations(report, previous_data['violations'], current_data['violations'])
+    create_csv(report, 'report')
 
     previous_file.close()
     current_file.close()
@@ -149,6 +159,33 @@ def create_csv(data, filename):
             report.writerow(i)
 
     print("Report written")
+
+
+
+def process_new_sources(source_stable, source_dev):
+
+    source_headings = ['RepoName', 'Number of Sources ( Base )', 'Number of Sources ( Latest )', 'List of Sources ( Base )', 'List of Sources ( Latest )', '% of change w.r.t base', 'New Sources added in Latest', 'Existing Sources remvoed from Latest']
+    stable_sources = len(source_stable)
+    dev_sources = len(source_dev)
+
+    source_names_stable = '\n'.join(list(map(lambda x: x['name'], source_stable)))
+    source_names_dev = '\n'.join(list(map(lambda x: x['name'], source_dev)))
+
+    # percent change in latest sources wrt stable release
+    percent_change = f'{((dev_sources - stable_sources) / stable_sources) * 100}%'   
+
+    new_latest = '\n'.join(list(set(source_names_dev) - set(source_names_stable)))
+    removed_dev = '\n'.join(list(set(source_names_stable) - set(source_names_dev)))
+
+    return [
+        source_headings,
+        ['abc', stable_sources, dev_sources, source_names_stable, source_names_dev, percent_change, new_latest, removed_dev]
+    ]
+
+
+
+
+
 
 
 if __name__ == "__main__":
