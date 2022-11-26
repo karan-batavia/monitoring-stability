@@ -69,9 +69,13 @@ def main():
 
     report.append([])
     report.append([])
+    path_value.append(["NUMBER OF PATHS ANANLYSIS: Analysis for Leakage DataFlows"])
 
    for row in process_path_analysis(previous_data, current_data):
         report.append(row) 
+
+    report.append([])
+    report.append([])
 
     create_csv(report, f'{filename}.csv')
 
@@ -311,7 +315,6 @@ def process_leakages(stable_dataflows, dev_dataflows, repo_name,key='leakages'):
 def process_path_analysis(source_stable, source_dev):
 
     path_value = []
-    path_value.append(["NUMBER OF PATHS ANANLYSIS: Analysis for Leakage DataFlows"])
     path_value.append(['RepoName', 'Name of the repo'])
     path_value.append([])
 
