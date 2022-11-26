@@ -70,6 +70,9 @@ def main():
     report.append([])
     report.append([])
 
+   for row in process_path_analysis(previous_data, current_data):
+        report.append(row) 
+
     create_csv(report, f'{filename}.csv')
 
     previous_file.close()
@@ -304,6 +307,86 @@ def process_leakages(stable_dataflows, dev_dataflows, repo_name,key='leakages'):
         headings,
         list(map(lambda x: x if len(str(x)) else "--", result))
     ]
+
+def process_path_analysis(source_stable, source_dev):
+
+    path_value = []
+    path_value.append(["NUMBER OF PATHS ANANLYSIS: Analysis for Leakage DataFlows"])
+    path_value.append(['RepoName', 'Name of the repo'])
+    path_value.append([])
+
+    for i in ['storages', 'leakages', 'third_parties']:
+        for i in sub_process_path(source_stable['dataFlow'][i], source_dev['dataFlow'][i], i):
+            path_value.append(i)
+
+    return path_value
+
+
+def sub_process_path(source_stable, source_dev, value):
+
+    final_result_list = []
+
+    process_stable_data = {}
+    process_dev_data = {}
+    
+    source_data_list = set()
+
+    for i in source_stable:
+        source_id = i['sourceId']
+        sinks_data = {}
+        for j in i['sinks']:
+            sinks_data[j['id']] = len(j['paths'])
+        process_stable_data[source_id] = sinks_data
+        source_data_list.add(i['sourceId'])
+
+    for i in source_dev:
+        source_id = i['sourceId']
+        sinks_data = {}
+        for j in i['sinks']:
+            sinks_data[j['id']] = len(j['paths'])
+        process_dev_data[source_id] = sinks_data
+        source_data_list.add(i['sourceId'])
+
+    for i in source_data_list:
+
+        sub_heading_list = []
+        sub_title_list = []
+        sub_result_list = []
+
+        base_list = process_stable_data[i] if process_stable_data.__contains__(i) else []
+        dev_list = process_dev_data[i] if process_dev_data.__contains__(i) else []
+        sinks_list = set()
+
+        for j in base_list:
+            sinks_list.add(j)
+
+        for j in dev_list:
+            sinks_list.add(j)
+
+        for j in sinks_list:
+            base_count = base_list[j] if j in base_list else "NA"
+            dev_count = dev_list[j] if j in dev_list else "NA"
+
+            path_flow = "1 : " + str(i) + " -> " + str(j)
+            complete_path = "DataFlow -> " + value + " -> " + str(i) + " -> " + str(j)
+
+            sub_heading_list.append('\n'.join([path_flow, complete_path]))
+            sub_heading_list.append("")
+            sub_heading_list.append("")
+            sub_title_list.append("Base")
+            sub_title_list.append("Latest")
+            sub_title_list.append("% Change")
+            sub_result_list.append(base_count)
+            sub_result_list.append(dev_count)
+            sub_result_list.append(f'{((dev_count - base_count) / base_count) * 100}%')
+
+
+        final_result_list.append(sub_heading_list)
+        final_result_list.append(sub_title_list)
+        final_result_list.append(sub_result_list)
+        final_result_list.append([])
+    
+    return final_result_list
 
 if __name__ == "__main__":
     main()
