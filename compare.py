@@ -57,7 +57,17 @@ def main():
 
     for row in process_sinks(dataflow_stable, dataflow_dev, repo_name,key='third_parties'):
         report.append(row)
+
     
+    report.append([])
+    report.append([])
+
+
+    report.append(['Analysis for collections'])
+
+    for collection in top_level_collection_processor(previous_data['collections'], current_data['collections'], repo_name):
+        for row in collection:
+            report.append(row)
 
     report.append([])
     report.append([])
@@ -69,9 +79,9 @@ def main():
 
     report.append([])
     report.append([])
-    path_value.append(["NUMBER OF PATHS ANANLYSIS: Analysis for Leakage DataFlows"])
+    report.append(["NUMBER OF PATHS ANANLYSIS: Analysis for Leakage DataFlows"])
 
-   for row in process_path_analysis(previous_data, current_data):
+    for row in process_path_analysis(previous_data, current_data, repo_name):
         report.append(row) 
 
     report.append([])
@@ -79,91 +89,57 @@ def main():
 
     create_csv(report, f'{filename}.csv')
 
+
     previous_file.close()
     current_file.close()
 
-def process_sources_data(report, previous_data, current_data):
-    report.append([])
-    report.append([])
 
-    report.append(['Sources Report'])
+def top_level_collection_processor(collections_stable, collections_dev, repo_name):
+    report = []
+    for collection in list(zip(collections_stable, collections_dev)):
+        stable_c = collection[0]
+        dev_c = collection[1]
+        report.append(process_collection(stable_c, dev_c, repo_name,stable_c['name']))
 
-    report.append([])
-
-    report.append(['Main Version', 'Current Version'])
-
-    previous_count = 0
-    current_count = 0
-
-    for i in range(0, min(len(previous_data), len(current_data))):
-        report.append([previous_data[previous_count]['id'], current_data[current_count]['id']])
-        previous_count = previous_count + 1
-        current_count = current_count + 1
-
-    while previous_count < len(previous_data):
-        report.append([previous_data[previous_count]['id']])
-        previous_count = previous_count + 1
-
-    while current_count < len(current_data):
-        report.append(["", current_data[current_count]['id']])
-        current_count = current_count + 1
-
-def process_processing_data(report, previous_data, current_data):
-
-    report.append([])
-    report.append([])
-
-    report.append(['Processing Report'])
-
-    report.append([])
-
-    report.append(['SourceId Name', 'Previous Count', 'Current Count'])
-
-    previous_value = {}
-    current_value = {}
-    items = set()
-
-    for i in previous_data:
-        previous_value[i['sourceId']] = len(i['occurrences'])
-        items.add(i['sourceId'])
-
-    for i in current_data:
-        current_value[i['sourceId']] = len(i['occurrences'])
-        items.add(i['sourceId'])
-
-    for i in items:
-        count_a = previous_value[i] if i in previous_value else 0
-        count_b = current_value[i] if i in current_value else 0
-        report.append([i, count_a, count_b])
-
-def process_collection(report, previous_data, current_data):
+    return report
 
 
-    report.append([])
-    report.append([])
+def process_collection(collections_stable, collections_dev, repo_name, collection_name):
+    collection_headings = ['repo_name', f'Number of Collections - {collection_name} ( Base ) ', f'Number of Collections - {collection_name} ( Latest )', 'List of  sourceId ( Base )', 'List of  sourceId ( Latest )', '% of change w.r.t base', 'New sourceIds added in Latest', 'Existing sourceIds removed from Latest']
+    stable_collections = len(collections_stable)
+    dev_collections = len(collections_dev)
 
-    report.append(['Collections Report'])
+    collections_sources_stable = []
+    collections_sources_dev = []
 
-    report.append([])
 
-    report.append(['SourceId Name', 'Previous Count', 'Current Count'])
 
-    previous_value = {}
-    current_value = {}
-    items = set()
+    for ci in collections_stable['collections']:
+        collections_sources_stable.append(ci['sourceId'])
 
-    for i in previous_data:
-        previous_value[i['sourceId']] = len(i['occurrences'])
-        items.add(i['sourceId'])
     
-    for i in current_data:
-        current_value[i['sourceId']] = len(i['occurrences'])
-        items.add(i['sourceId'])
+    for ci in collections_dev['collections']:
+        collections_sources_dev.append(ci['sourceId'])
 
-    for i in items:
-        count_a = previous_value[i] if i in previous_value else 0
-        count_b = current_value[i] if i in current_value else 0
-        report.append([i, count_a, count_b])
+
+    try:
+        percent_change = f'{((collections_sources_dev - collections_sources_stable) / collections_sources_stable) * 100}%'  
+    except:
+        percent_change = '0.00%'
+
+
+    new_latest = '\n'.join(list(set(collections_sources_dev) - set(collections_sources_stable)))
+    removed_dev = '\n'.join(list(set(collections_sources_stable) - set(collections_sources_dev)))
+
+    collections_sources_stable = '\n'.join(collections_sources_stable)
+    collections_sources_dev = '\n'.join(collections_sources_dev)
+
+    result = [repo_name, stable_collections, dev_collections, collections_sources_stable, collections_sources_dev, percent_change, new_latest, removed_dev]
+    
+    return [
+        collection_headings,
+        list(map(lambda x: x if len(str(x)) else "--", result))
+    ]
 
 
 def process_violations(report, previous_data, current_data):
@@ -195,7 +171,7 @@ def process_violations(report, previous_data, current_data):
 
 def create_csv(data, filename):
 
-    with open(f'./{filename}.csv', "w") as value:
+    with open(f'./{filename}', "w") as value:
         report = csv.writer(value)
         for i in data:
             report.writerow(i)
@@ -312,10 +288,11 @@ def process_leakages(stable_dataflows, dev_dataflows, repo_name,key='leakages'):
         list(map(lambda x: x if len(str(x)) else "--", result))
     ]
 
-def process_path_analysis(source_stable, source_dev):
 
+
+def process_path_analysis(source_stable, source_dev, repo_name):
     path_value = []
-    path_value.append(['RepoName', 'Name of the repo'])
+    path_value.append(['RepoName', repo_name])
     path_value.append([])
 
     for i in ['storages', 'leakages', 'third_parties']:
@@ -381,8 +358,10 @@ def sub_process_path(source_stable, source_dev, value):
             sub_title_list.append("% Change")
             sub_result_list.append(base_count)
             sub_result_list.append(dev_count)
-            sub_result_list.append(f'{((dev_count - base_count) / base_count) * 100}%')
-
+            try:
+                sub_result_list.append(f'{((dev_count - base_count) / base_count) * 100}%')
+            except:
+                sub_result_list.append('0.00%')
 
         final_result_list.append(sub_heading_list)
         final_result_list.append(sub_title_list)
@@ -390,6 +369,9 @@ def sub_process_path(source_stable, source_dev, value):
         final_result_list.append([])
     
     return final_result_list
+
+
+
 
 if __name__ == "__main__":
     main()
